@@ -5,16 +5,16 @@
 		body{
 			background-color: #1b2431;
 		}
+		
+		#videoPlayer{
+			margin-top:25px;
+		}
 
 		#frame
 		{
 		    position: absolute;			
 			top: 20%;
 			left: 20%;
-		}
-
-		.buttonPanel{
-			margin-left: 20px;
 		}
 
 		#frame > div > div{
@@ -31,3 +31,7 @@
 			padding-left: 20px;
 		}
 		
+		.buttonPanel{
+			margin-left: 20px;
+		}
+
