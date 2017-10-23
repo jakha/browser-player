@@ -3,41 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<title></title>
-	<style type="text/css">
-		* {
-		    margin: 0;
-		    padding: 0;
-		   }
-		body{
-			background-color: #1b2431;
-		}
-
-		#frame
-		{
-		    position: absolute;			
-			top: 20%;
-			left: 20%;
-		}
-
-		.buttonPanel{
-			margin-left: 20px;
-		}
-
-		#frame > div > div{
-
-			float: left;
-		}
-
-		#info{
-			color: #1b2431;
-			font-size: 0.9em;
-		}
-		#timePanel{
-			color: white;
-			padding-left: 20px;
-		}
-		
-	</style>
+	<link rel="stylesheet" type="text/css" href="style.css">
 </head>	
 <body>
    	<div id = "frame">
@@ -47,7 +13,7 @@
    	   	<div class="controlPanel">
 	   		<div class = "infoPanel">
 		   		<div>
-		   			<!-- <input id = "source" type="text" name="source" placeholder="source of the video"
+					<!-- <input id = "source" type="text" name="source" placeholder="source of the video"
 		   				value="https://bitmovin-a.akamaihd.net/content/playhouse-vr/mpds/105560.mpd" /> -->
 		   			<input id = "source" type="text" name="source" placeholder="source of the video"
 		   				value="https://bitmovin-a.akamaihd.net/content/playhouse-vr/m3u8s/105560.m3u8" />
@@ -74,252 +40,16 @@
         </div>
         <div>
         	<video id= "videoPlayer">
-
         	</video>
         </div>
 	</div>
 	<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 	<script src="https://cdn.dashjs.org/latest/dash.all.min.js"></script>
+	<script src="player.js"></script>
 	<script type="text/javascript">
 		(function ()
 		{
 			let player = new jjPlayerController();
-
-			function jjPlayerModel(source, videoFrame)
-			{
-				jjModel = this;
-				jjModel.min = 0;
-				jjModel.sec = 0;
-
-				Object.defineProperty(jjModel, "DASH", {
-												  value: 1,
-												  writable: false,
-												  configurable: false 
-												});
-				Object.defineProperty(jjModel, "HLS", {
-													  value: 2,
-													  writable: false,
-													  configurable: false
-													});	
-				jjModel.videoFrame = videoFrame;
-				validateSource(source);
-
-				function validateSource(source)
-				{
-					jjModel.source = source;
-					let ext = source.split('.').pop(); 
-					switch(ext)
-					{
-						case 'mpd':
-							jjModel.nowWePlayingFormat = jjModel.DASH;
-							jjModel.player = dashjs.MediaPlayer().create();
-							jjModel.player.initialize(jjModel.videoFrame, jjModel.source, false);
-					 		break;
-				 		case 'm3u8':
-				 			jjModel.nowWePlayingFormat = jjModel.HLS;
-				 			jjModel.player = new Hls();
-						    jjModel.player.loadSource(jjModel.source);
-						    jjModel.player.attachMedia(jjModel.videoFrame);
-						    jjModel.player.on(Hls.Events.MEDIA_ATTACHED, function () {
-								    console.log("video and hls.js are now bound together !");
-						    });
-				 			break;
-				 		default:
-				 			throw new Error("player don't support this format");
-					}
-				}
-
-				jjModel.stop = function ()
-				{
-					switch(this.nowWePlayingFormat)
-					{
-						case this.DASH:
-							this.player.pause();
-							break;
-						case this.HLS:
-							this.player.media.pause();
-							break;
-						default:
-							break;
-					}
-				};
-
-				jjModel.play = function () 
-				{
-					jjModel = this;
-					switch(jjModel.nowWePlayingFormat)
-					{
-						case jjModel.DASH:
-							jjModel.player.play();
-							break;
-						case jjModel.HLS:
-						   	jjModel.videoFrame.play();
-							break;
-						default:
-							break;
-					}
-				};
-
-				jjModel.duration = function () 
-				{
-					let playerDuration = '';
-
-					switch(this.nowWePlayingFormat)
-					{
-						case this.DASH:
-							playerDuration = this.player.duration();
-							break;
-						case this.HLS:
-							playerDuration = this.player.media.duration;
-							break;
-					}
-
-					let durForView = playerDuration/60;
-					let durByMinAsArr = durForView.toFixed(2).split('.');
-					return {
-						fullTimeBySec: playerDuration,
-						inMin: durByMinAsArr[0],
-						inSec: durByMinAsArr[1]
-					}
-				};
-
-				jjModel.time = function()
-				{
-					let time;
-					switch(this.nowWePlayingFormat)
-					{
-						case this.DASH:
-							time = this.player.time();
-							break;
-						case this.HLS:
-							time = this.player.media.currentTime
-							break;
-					}
-
-					return {
-						timeBySec: time,
-						min: Math.floor(time/60),
-						sec: Math.trunc(time%60)
-					}
-				};
-
-				jjModel.seek = function (time)
-				{
-					switch(this.nowWePlayingFormat)
-					{
-						case this.DASH:
-							this.player.seek(time);
-						case this.HLS:
-							this.player.media.currentTime = time;
-							break;
-					}
-				};
-			}
-
-			function jjPlayerController ()
-			{
-				let that = this;
-
-				that.videoFrame =  document.getElementById('videoPlayer');
-				that.progressbar  = document.getElementById('myProgress');
-				that.intervalId = '';
-
-				let source = document.getElementById('source');
-
-				adaptizeWidthForScreen();
-
-				that.playButton = document.getElementById('play');
-				that.stopButton = document.getElementById('stop');
-				that.info = document.getElementById('info');
-
-				that.playButton.addEventListener('click', function(e)
-				{
-					that.playerModel.play();
-					setDurationOnView();
-					that.intervalId = setInterval(setTimeOnView, 1000);
-
-				});
-
-				that.stopButton.addEventListener('click', function(e)
-				{
-					that.playerModel.stop();
-					clearInterval(that.intervalId);
-				});
-
-				that.progressbar.addEventListener('click', function(e)
-				{
-					let time =  calculateSearchTime(e.clientX);
-					that.playerModel.seek(time);
-					that.progressbar.value = time;
-				});
-
-				try
-				{
-					initPlayerModel();
-				}
-				catch(e)
-				{
-					return e;
-				}
-
-				source.addEventListener('change', function(e)
-				{
-					initPlayerModel();
-				});
-
-				function calculateSearchTime(position)
-				{
-					let rectSize = that.progressbar.getBoundingClientRect();
-					let step = rectSize.width / that.progressbar.max;
-					let seekTime = (position - rectSize.left) / step;
-					return seekTime;
-				}
-
-				function adaptizeWidthForScreen()
-				{
-					that.videoFrame.style.width = screen.width/2 + "px";
-					source.style.width = screen.width/3 + "px"
-					that.progressbar.style.width = screen.width/2 - 100 + "px";
-					that.videoFrame.style.height = screen.height/2 + "px";
-				}
-
-				function setDurationOnView ()
-				{
-					let playerDuration = that.playerModel.duration();
-					that.progressbar.max = playerDuration.fullTimeBySec;
-					document.getElementById('duration').innerHTML = playerDuration.inMin + ":" + playerDuration.inSec;
-				}
-
-				function initPlayerModel()
-				{
-					that.playerModel = new jjPlayerModel(source.value, that.videoFrame);
-					console.dir(that.playerModel);
-
-				}
-
-				function setTimeOnView()
-				{
-					let time = that.playerModel.time();
-
-					that.progressbar.value = time.timeBySec;
-					document.getElementById('currentTime').innerHTML =  time.min + ":" + time.sec;
-				}
-			};
-
-			jjPlayerController.prototype.printInfo = function(text)
-			{	
-				if(text == "")
-				{
-					text = 'Evrithing is ok';
-					this.info.style.color = '#1b2431';
-				}
-				else
-				{
-					this.info.style.color = 'red';
-				}
-				this.info.innerHTML = text;
-			};
-
 		})();
 	</script>
 </body>
@@ -327,3 +57,5 @@
 
 <!-- https://bitmovin-a.akamaihd.net/content/playhouse-vr/mpds/105560.mpd -->
 <!-- https://bitmovin-a.akamaihd.net/content/playhouse-vr/m3u8s/105560.m3u8 -->
+<!--https://d2zihajmogu5jn.cloudfront.net/bipbop-advanced/bipbop_16x9_variant.m3u8 -->
+<!--http://multiplatform-f.akamaihd.net/i/multi/will/bunny/big_buck_bunny_,640x360_400,640x360_700,640x360_1000,950x540_1500,.f4v.csmil/master.m3u8 -->

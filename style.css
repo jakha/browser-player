@@ -1,0 +1,33 @@
+		* {
+		    margin: 0;
+		    padding: 0;
+		   }
+		body{
+			background-color: #1b2431;
+		}
+
+		#frame
+		{
+		    position: absolute;			
+			top: 20%;
+			left: 20%;
+		}
+
+		.buttonPanel{
+			margin-left: 20px;
+		}
+
+		#frame > div > div{
+
+			float: left;
+		}
+
+		#info{
+			color: #1b2431;
+			font-size: 0.9em;
+		}
+		#timePanel{
+			color: white;
+			padding-left: 20px;
+		}
+		
