@@ -1,6 +1,6 @@
 
 			function jjPlayerModel(source, videoFrame)
-			{
+			{				
 				jjModel = this;
 
 				Object.defineProperty(jjModel, "DASH", {
@@ -14,6 +14,7 @@
 													  configurable: false
 													});	
 				jjModel.videoFrame = videoFrame;
+				
 				validateSource(source);
 
 				function validateSource(source)
@@ -24,9 +25,15 @@
 					{
 						case 'mpd':
 							if (typeof (window.MediaSource) === "function") { 
-								jjModel.nowWePlayingFormat = jjModel.DASH;
-								jjModel.player = dashjs.MediaPlayer().create();
-								jjModel.player.initialize(jjModel.videoFrame, jjModel.source, false);
+								try{
+									jjModel.nowWePlayingFormat = jjModel.DASH;
+									jjModel.player = dashjs.MediaPlayer().create();
+									jjModel.player.initialize(jjModel.videoFrame, jjModel.source, false);
+								}
+								catch(e)
+								{
+									throw new Error(e);
+								}
 							}
 							else
 							{
@@ -36,13 +43,19 @@
 				 		case 'm3u8':
 							if(Hls.isSupported())
 							{
-								jjModel.nowWePlayingFormat = jjModel.HLS;
-								jjModel.player = new Hls();
-								jjModel.player.loadSource(jjModel.source);
-								jjModel.player.attachMedia(jjModel.videoFrame);
-								jjModel.player.on(Hls.Events.MEDIA_ATTACHED, function () {
-										console.log("video and hls.js are now bound together !");
-								});
+								try{
+									jjModel.nowWePlayingFormat = jjModel.HLS;
+									jjModel.player = new Hls();
+									jjModel.player.loadSource(jjModel.source);
+									jjModel.player.attachMedia(jjModel.videoFrame);
+									jjModel.player.on(Hls.Events.MEDIA_ATTACHED, function () {
+											console.log("video and hls.js are now bound together !");
+									});
+								}
+								catch(e)
+								{
+									throw new Error(e);
+								}
 							}
 							else
 							{
@@ -214,9 +227,11 @@
 
 				function initPlayerModel()
 				{
+					that.playerModel = null;
 					try{
 						
 						that.playerModel = new jjPlayerModel(source.value, that.videoFrame);
+						that.printInfo('');
 					}
 					catch(e)
 					{
