@@ -161,7 +161,27 @@
 				let that = this;
 
 				that.videoFrame =  document.getElementById('videoPlayer');
-				that.progressbar  = document.getElementById('myProgress');
+				that.progressbar  =  {
+										dom:document.getElementById('progressbar'),
+										slider: document.getElementById('myProgress'),
+										max: 0,
+										value: 0,
+										step:0,
+										getTime: function (position)
+												{
+													that.progressbar.step = that.progressbar.rect.width / that.progressbar.max;
+													let seekTime = (position - that.progressbar.rect.left) / that.progressbar.step;
+													return seekTime;
+												},
+										setTime: function(sec)
+												{
+													that.progressbar.step = that.progressbar.rect.width / that.progressbar.max;
+													console.log(that.progressbar.step);
+													console.log(sec * that.progressbar.step);
+													that.progressbar.slider.style.left = (sec * that.progressbar.step) + "px";
+												}		
+									}
+									
 				that.intervalId = '';
 
 				let source = document.getElementById('source');
@@ -177,7 +197,6 @@
 					that.playerModel.play();
 					setDurationOnView();
 					that.intervalId = setInterval(setTimeOnView, 1000);
-
 				});
 
 				that.stopButton.addEventListener('click', function(e)
@@ -185,12 +204,12 @@
 					that.playerModel.stop();
 					clearInterval(that.intervalId);
 				});
-
-				that.progressbar.addEventListener('click', function(e)
+				
+				that.progressbar.dom.addEventListener('click', function(e)
 				{
-					let time =  calculateSearchTime(e.clientX);
+					let time = that.progressbar.getTime(e.clientX);
 					that.playerModel.seek(time);
-					that.progressbar.value = time;
+					that.progressbar.slider.style.left = e.clientX;
 				});
 
 		
@@ -202,19 +221,12 @@
 					initPlayerModel();
 				});
 
-				function calculateSearchTime(position)
-				{
-					let rectSize = that.progressbar.getBoundingClientRect();
-					let step = rectSize.width / that.progressbar.max;
-					let seekTime = (position - rectSize.left) / step;
-					return seekTime;
-				}
-
 				function adaptizeWidthForScreen()
 				{
 					that.videoFrame.style.width = screen.width/2 + "px";
-					source.style.width = screen.width/3 + "px"
-					that.progressbar.style.width = screen.width/2 - 100 + "px";
+					source.style.width = screen.width/3 + "px";
+					that.progressbar.dom.style.width = screen.width/2 - 100 + "px";
+					that.progressbar.rect = that.progressbar.dom.getBoundingClientRect(),
 					that.videoFrame.style.height = screen.height/2 + "px";
 				}
 
@@ -242,10 +254,9 @@
 				function setTimeOnView()
 				{
 					let time = that.playerModel.time();
-
-					that.progressbar.value = time.timeBySec;
+					that.progressbar.setTime(time.timeBySec);
 					document.getElementById('currentTime').innerHTML =  time.min + ":" + time.sec;
-				}
+				}	
 			};
 
 			jjPlayerController.prototype.printInfo = function(text)
@@ -253,7 +264,7 @@
 				if(text == "")
 				{
 					text = 'Evrithing is ok';
-					this.info.style.color = '#1b2431';
+					this.info.style.color = '#FFF0F5';
 				}
 				else
 				{
