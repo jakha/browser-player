@@ -43,19 +43,13 @@
 				 		case 'm3u8':
 							if(Hls.isSupported())
 							{
-								try{
-									jjModel.nowWePlayingFormat = jjModel.HLS;
-									jjModel.player = new Hls();
-									jjModel.player.loadSource(jjModel.source);
-									jjModel.player.attachMedia(jjModel.videoFrame);
-									jjModel.player.on(Hls.Events.MEDIA_ATTACHED, function () {
-											console.log("video and hls.js are now bound together !");
-									});
-								}
-								catch(e)
-								{
-									throw new Error(e);
-								}
+								jjModel.nowWePlayingFormat = jjModel.HLS;
+								jjModel.player = new Hls();
+								jjModel.player.loadSource(jjModel.source);	
+								jjModel.player.attachMedia(jjModel.videoFrame);
+								jjModel.player.on(Hls.ErrorDetails.LEVEL_LOAD_ERROR, function(){
+									throw new Error("file not found")
+								});								
 							}
 							else
 							{
@@ -112,6 +106,10 @@
 						case this.HLS:
 							playerDuration = this.player.media.duration;
 							break;
+					}
+					
+					if(isNaN(playerDuration)){
+						throw new Error("Problems with file load, probably file not found, change url or press play again");
 					}
 
 					let durForView = playerDuration/60;
@@ -216,7 +214,7 @@
 				initPlayerModel();
 		
 
-				source.addEventListener('change', function(e)
+				source.addEventListener('blur', function(e)
 				{
 					initPlayerModel();
 				});
@@ -232,9 +230,15 @@
 
 				function setDurationOnView ()
 				{
-					let playerDuration = that.playerModel.duration();
-					that.progressbar.max = playerDuration.fullTimeBySec;
-					document.getElementById('duration').innerHTML = playerDuration.inMin + ":" + playerDuration.inSec;
+					that.printInfo("");
+					try{
+						let playerDuration = that.playerModel.duration();
+						that.progressbar.max = playerDuration.fullTimeBySec;
+						document.getElementById('duration').innerHTML = playerDuration.inMin + ":" + playerDuration.inSec;
+					}
+					catch(e){
+						that.printInfo(e);
+					}
 				}
 
 				function initPlayerModel()
@@ -247,6 +251,7 @@
 					}
 					catch(e)
 					{
+						that.playerModel = null;
 						that.printInfo(e);
 					}
 				}

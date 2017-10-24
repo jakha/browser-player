@@ -29,15 +29,18 @@
 		}
 	
 		#source{
-			border-radius: 4px;
-			border: 1px solid;
-			height:2.3em;
+			border-radius: 5px;
+			border: 1px solid black;
+			height:2.1em;
+			font-size: 1em; 
+			font-family: Tahoma;
 		}
 		
 		#info{
 			color: #FFF0F5;
 			font-size: 0.9em;
 		}
+		
 		#timePanel{
 			color: black;
 			padding-left: 20px;
@@ -81,7 +84,7 @@
 	background-image : url("img/slider.png");
 	background-size:14px 7px;
 	height: 12px;
-	width:12px;	
+	width:8px;	
 	position: absolute;
 	top: 0;
 	left: 0;
