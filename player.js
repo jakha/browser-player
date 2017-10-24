@@ -195,6 +195,7 @@
 					that.playerModel.play();
 					setDurationOnView();
 					that.intervalId = setInterval(setTimeOnView, 1000);
+					that.printInfo(1);
 				});
 
 				that.stopButton.addEventListener('click', function(e)
@@ -266,14 +267,17 @@
 
 			jjPlayerController.prototype.printInfo = function(text)
 			{	
-				if(text == "")
-				{
-					text = 'Evrithing is ok';
+				if(text == 1){
 					this.info.style.color = '#FFF0F5';
-				}
-				else
-				{
-					this.info.style.color = 'red';
-				}
-				this.info.innerHTML = text;
+				}else
+					if(text == "")
+					{
+						text = "Everything is simple, put url on entry field and press play";
+						this.info.style.color = 'green';
+					}
+					else
+					{
+						this.info.style.color = 'red';
+					}
+					this.info.innerHTML = text;
 			};
